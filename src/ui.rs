@@ -29,18 +29,41 @@ impl Default for UiState {
 
 pub struct Ui {
     knob: Knob,
-    _button_a: Button,
-    _button_b: Button,
+    button_a: Button,
+    button_b: Button,
     state: UiState,
 }
 
 impl Ui {
-    pub fn new(knob: Knob, _button_a: Button, _button_b: Button) -> Self {
+    pub fn new(knob: Knob, button_a: Button, button_b: Button) -> Self {
         Self {
             knob,
-            _button_a,
-            _button_b,
+            button_a,
+            button_b,
             state: UiState::default(),
+        }
+    }
+
+    async fn update_led(&mut self, level: u32, led: usize) {
+        if level !=  self.state.levels[led] {
+            self.state.levels[led] = level;
+            self.state.show();
+            set_rgb_levels(|rgb| {
+                *rgb = self.state.levels;
+            })
+            .await;
+        }
+    }
+
+    async fn update_fr(&mut self, level: u64) {
+        let lvl = (level + 1) * 10;
+        if lvl != self.state.frame_rate {
+            self.state.frame_rate = lvl;
+            self.state.show();
+            set_frame_rate(|fr| {
+                *fr = self.state.frame_rate;
+            })
+            .await;
         }
     }
 
@@ -53,26 +76,13 @@ impl Ui {
         .await;
         self.state.show();
         loop {
-            let level = self.knob.measure().await as u64;
-            if (level + 1) * 10 != self.state.frame_rate {
-                self.state.frame_rate = (level + 1) * 10;
-                self.state.show();
-                set_frame_rate(|fr| {
-                    *fr = self.state.frame_rate;
-                })
-                .await;
-            }
-            /*
             let level = self.knob.measure().await;
-            if level != self.state.levels[2] {
-                self.state.levels[2] = level;
-                self.state.show();
-                set_rgb_levels(|rgb| {
-                    *rgb = self.state.levels;
-                })
-                .await;
+            match (self.button_a.is_low(), self.button_b.is_low()) {
+                (true, true) => self.update_led(level, 0).await,     // red
+                (true, false) => self.update_led(level, 1).await,    // green
+                (false, true) => self.update_led(level, 2).await,    // blue
+                (false, false) => self.update_fr(level as u64).await,
             }
-            */
             Timer::after_millis(50).await;
         }
     }
