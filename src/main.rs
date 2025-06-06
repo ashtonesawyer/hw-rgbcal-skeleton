@@ -27,6 +27,8 @@ use num_traits::float::FloatCore;
 
 ///Levels for each color's brighness: [red, blue, green]
 pub static RGB_LEVELS: Mutex<ThreadModeRawMutex, [u32; 3]> = Mutex::new([0; 3]);
+///Levels for LED frame rate 10..160 in steps of 10
+pub static FRAME_RATE: Mutex<ThreadModeRawMutex, u64> = Mutex::new(10);
 ///Number of available levels
 pub const LEVELS: u32 = 16;
 
@@ -35,12 +37,25 @@ async fn get_rgb_levels() -> [u32; 3] {
     *rgb_levels
 }
 
+async fn get_frame_rate() -> u64 {
+    let fr = FRAME_RATE.lock().await;
+    *fr
+}
+
 async fn set_rgb_levels<F>(setter: F)
 where
     F: FnOnce(&mut [u32; 3]),
 {
     let mut rgb_levels = RGB_LEVELS.lock().await;
     setter(&mut rgb_levels);
+}
+
+async fn set_frame_rate<F>(setter: F)
+where
+    F: FnOnce(&mut u64),
+{
+    let mut fr = FRAME_RATE.lock().await;
+    setter(&mut fr);
 }
 
 #[embassy_executor::main]

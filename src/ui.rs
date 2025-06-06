@@ -46,13 +46,23 @@ impl Ui {
 
     ///Set levels from knob and show
     pub async fn run(&mut self) -> ! {
-        self.state.levels[2] = self.knob.measure().await;
+        self.state.frame_rate = self.knob.measure().await as u64 * 10;
         set_rgb_levels(|rgb| {
             *rgb = self.state.levels;
         })
         .await;
         self.state.show();
         loop {
+            let level = self.knob.measure().await as u64;
+            if (level + 1) * 10 != self.state.frame_rate {
+                self.state.frame_rate = (level + 1) * 10;
+                self.state.show();
+                set_frame_rate(|fr| {
+                    *fr = self.state.frame_rate;
+                })
+                .await;
+            }
+            /*
             let level = self.knob.measure().await;
             if level != self.state.levels[2] {
                 self.state.levels[2] = level;
@@ -62,6 +72,7 @@ impl Ui {
                 })
                 .await;
             }
+            */
             Timer::after_millis(50).await;
         }
     }
