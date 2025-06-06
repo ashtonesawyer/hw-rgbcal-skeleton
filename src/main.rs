@@ -25,7 +25,9 @@ use microbit_bsp::{
 };
 use num_traits::float::FloatCore;
 
+///Levels for each color's brighness: [red, blue, green]
 pub static RGB_LEVELS: Mutex<ThreadModeRawMutex, [u32; 3]> = Mutex::new([0; 3]);
+///Number of available levels
 pub const LEVELS: u32 = 16;
 
 async fn get_rgb_levels() -> [u32; 3] {
@@ -43,19 +45,22 @@ where
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) -> ! {
-    rtt_init_print!();
+    rtt_init_print!(); // set up printing
     let board = Microbit::default();
 
+    // set up interrupts
     bind_interrupts!(struct Irqs {
         SAADC => saadc::InterruptHandler;
     });
 
+    // set up RGB struct
     let led_pin = |p| Output::new(p, Level::Low, OutputDrive::Standard);
     let red = led_pin(AnyPin::from(board.p9));
     let green = led_pin(AnyPin::from(board.p8));
     let blue = led_pin(AnyPin::from(board.p16));
     let rgb: Rgb = Rgb::new([red, green, blue], 100);
 
+    // set up knob interface
     let mut saadc_config = saadc::Config::default();
     saadc_config.resolution = saadc::Resolution::_14BIT;
     let saadc = saadc::Saadc::new(
@@ -67,6 +72,7 @@ async fn main(_spawner: Spawner) -> ! {
     let knob = Knob::new(saadc).await;
     let mut ui = Ui::new(knob, board.btn_a, board.btn_b);
 
+    // run LEDs and UI concurrently -- should loop infinitely
     join::join(rgb.run(), ui.run()).await;
 
     panic!("fell off end of main loop");

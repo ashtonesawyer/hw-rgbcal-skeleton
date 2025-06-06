@@ -10,6 +10,7 @@ impl Knob {
         Self(adc)
     }
 
+    ///Get the current value of the knob as a level
     pub async fn measure(&mut self) -> u32 {
         let mut buf = [0];
         self.0.sample(&mut buf).await;

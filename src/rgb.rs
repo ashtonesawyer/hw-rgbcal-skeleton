@@ -10,6 +10,7 @@ pub struct Rgb {
 }
 
 impl Rgb {
+    // convert frame rate + level to time on
     fn frame_tick_time(frame_rate: u64) -> u64 {
         1_000_000 / (3 * frame_rate * LEVELS as u64)
     }
@@ -23,6 +24,7 @@ impl Rgb {
         }
     }
 
+    ///Power LED for one frame
     async fn step(&mut self, led: usize) {
         let level = self.levels[led];
         if level > 0 {
@@ -38,6 +40,7 @@ impl Rgb {
         }
     }
 
+    ///Turn on the LED 
     pub async fn run(mut self) -> ! {
         loop {
             self.levels = get_rgb_levels().await;

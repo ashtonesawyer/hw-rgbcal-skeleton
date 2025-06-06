@@ -6,6 +6,7 @@ struct UiState {
 }
 
 impl UiState {
+    ///Print State to terminal
     fn show(&self) {
         let names = ["red", "green", "blue"];
         rprintln!();
@@ -17,6 +18,7 @@ impl UiState {
 }
 
 impl Default for UiState {
+    ///Set defaults for UiState
     fn default() -> Self {
         Self {
             levels: [LEVELS - 1, LEVELS - 1, LEVELS - 1],
@@ -42,6 +44,7 @@ impl Ui {
         }
     }
 
+    ///Set levels from knob and show
     pub async fn run(&mut self) -> ! {
         self.state.levels[2] = self.knob.measure().await;
         set_rgb_levels(|rgb| {
