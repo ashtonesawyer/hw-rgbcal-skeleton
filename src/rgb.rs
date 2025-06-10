@@ -40,7 +40,7 @@ impl Rgb {
         }
     }
 
-    ///Turn on the LED 
+    ///Turn on the LED
     pub async fn run(mut self) -> ! {
         loop {
             self.levels = get_rgb_levels().await;

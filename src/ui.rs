@@ -46,7 +46,7 @@ impl Ui {
 
     ///Update global LED levels to match local
     async fn update_led(&mut self, level: u32, led: usize) {
-        if level !=  self.state.levels[led] {
+        if level != self.state.levels[led] {
             self.state.levels[led] = level;
             self.state.show();
             set_rgb_levels(|rgb| {
@@ -81,9 +81,9 @@ impl Ui {
         loop {
             let level = self.knob.measure().await;
             match (self.button_a.is_low(), self.button_b.is_low()) {
-                (true, true) => self.update_led(level, 0).await,     // red
-                (true, false) => self.update_led(level, 1).await,    // green
-                (false, true) => self.update_led(level, 2).await,    // blue
+                (true, true) => self.update_led(level, 0).await, // red
+                (true, false) => self.update_led(level, 1).await, // green
+                (false, true) => self.update_led(level, 2).await, // blue
                 (false, false) => self.update_fr(level as u64).await,
             }
             Timer::after_millis(50).await;
