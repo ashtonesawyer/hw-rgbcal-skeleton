@@ -44,6 +44,7 @@ impl Ui {
         }
     }
 
+    ///Update global LED levels to match local
     async fn update_led(&mut self, level: u32, led: usize) {
         if level !=  self.state.levels[led] {
             self.state.levels[led] = level;
@@ -55,6 +56,7 @@ impl Ui {
         }
     }
 
+    ///Update global frame rate to match local
     async fn update_fr(&mut self, level: u64) {
         let lvl = (level + 1) * 10;
         if lvl != self.state.frame_rate {
@@ -69,7 +71,8 @@ impl Ui {
 
     ///Set levels from knob and show
     pub async fn run(&mut self) -> ! {
-        self.state.frame_rate = self.knob.measure().await as u64 * 10;
+        let lvl = self.knob.measure().await as u64;
+        self.state.frame_rate = (lvl + 1) * 10;
         set_rgb_levels(|rgb| {
             *rgb = self.state.levels;
         })
